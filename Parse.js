@@ -116,3 +116,6 @@
 </script>
 </body>
 </html>
+
+
+https://software.download.prss.microsoft.com/dbazure/Win10_22H2_English_x64v1.iso?t=fbe964fe-1857-4d19-8116-7896b84d471e&P1=1719310362&P2=601&P3=2&P4=JKScxAa%2bDKOsvEhcSlwZq2XSGgkxn2AWiRbrnYaRAMJWJ1ahKlmQOUpM4MPZr9qbEGjBCItbjo3I9Cm%2b5nW8RV%2fhKXEq9qScaDAnBCTeeGc3%2fzrcThPfcy1hM9UoaSCPnotamts52LqkZIkEffBzxeJfTcs1osYJR9NChBsBsjj0Rvn8X0dxrcwdERs%2fQpXQt3TATS1kmhcx1fjXciPySOeZwvvUSB0BNU0SWqqKcARQzncPje2tkISdAYxa%2bp%2bs5Oh76qs3inDxZ%2b7rplBZVjog%2b9SnvuCA6RS%2fJUQSGNY2OSDGEhqENdKkhXV9snCGBXha0XRr5gFP%2fAmhH50lIA%3d%3d
