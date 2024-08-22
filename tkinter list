@@ -1,0 +1,37 @@
+import subprocess
+import tkinter as tk
+from tkinter import ttk
+
+# Получаем список файлов с помощью команды 'ls'
+def get_file_list():
+    result = subprocess.run(['ls'], stdout=subprocess.PIPE)
+    files = result.stdout.decode('utf-8').splitlines()
+    return files
+
+# Основная функция создания GUI
+def create_checkbox_list(files):
+    root = tk.Tk()
+    root.title("Список файлов с чекбоксами")
+
+    # Список для хранения состояния чекбоксов
+    checkbox_vars = []
+
+    for file in files:
+        var = tk.BooleanVar()  # Переменная для чекбокса
+        checkbox = ttk.Checkbutton(root, text=file, variable=var)
+        checkbox.pack(anchor='w')  # Располагаем чекбокс по левому краю
+        checkbox_vars.append(var)
+
+    # Кнопка для проверки выбранных файлов
+    def show_selected():
+        selected_files = [files[i] for i in range(len(files)) if checkbox_vars[i].get()]
+        print("Выбранные файлы:", selected_files)
+
+    check_button = ttk.Button(root, text="Показать выбранные", command=show_selected)
+    check_button.pack()
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    files = get_file_list()
+    create_checkbox_list(files)
