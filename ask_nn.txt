@@ -1,0 +1,14 @@
+QByteArray NotificationElementsState::createStateHash(const QHash<QString, int> &hashMap)
+{
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::WriteOnly);
+    stream << QString(SETTINGS_HASH_VERSION);
+    stream << hashMap.size();
+    QHashIterator<QString, int> it(hashMap);
+    while (it.hasNext()) {
+        it.next();
+        stream << it.key();
+        stream << it.value();
+    }
+    return ba.toBase64();
+}
