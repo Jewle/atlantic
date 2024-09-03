@@ -1,0 +1,37 @@
+#include "AddDeviceDialog.h"
+#include <QFormLayout>
+#include <QDialogButtonBox>
+
+AddDeviceDialog::AddDeviceDialog(QWidget *parent)
+    : QDialog(parent) {
+    setWindowTitle("Добавить удаленное устройство");
+
+    QFormLayout *formLayout = new QFormLayout(this);
+
+    hostLineEdit = new QLineEdit(this);
+    usernameLineEdit = new QLineEdit(this);
+    passwordLineEdit = new QLineEdit(this);
+    passwordLineEdit->setEchoMode(QLineEdit::Password);  // Пароль скрыт
+
+    formLayout->addRow("Host:", hostLineEdit);
+    formLayout->addRow("Username:", usernameLineEdit);
+    formLayout->addRow("Password:", passwordLineEdit);
+
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+    formLayout->addWidget(buttonBox);
+}
+
+QString AddDeviceDialog::getHost() const {
+    return hostLineEdit->text();
+}
+
+QString AddDeviceDialog::getUsername() const {
+    return usernameLineEdit->text();
+}
+
+QString AddDeviceDialog::getPassword() const {
+    return passwordLineEdit->text();
+}
