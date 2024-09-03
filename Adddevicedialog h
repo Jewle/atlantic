@@ -1,0 +1,23 @@
+#ifndef ADDDEVICEDIALOG_H
+#define ADDDEVICEDIALOG_H
+
+#include <QDialog>
+#include <QLineEdit>
+
+class AddDeviceDialog : public QDialog {
+    Q_OBJECT
+
+public:
+    explicit AddDeviceDialog(QWidget *parent = nullptr);
+
+    QString getHost() const;
+    QString getUsername() const;
+    QString getPassword() const;
+
+private:
+    QLineEdit *hostLineEdit;
+    QLineEdit *usernameLineEdit;
+    QLineEdit *passwordLineEdit;
+};
+
+#endif // ADDDEVICEDIALOG_H
