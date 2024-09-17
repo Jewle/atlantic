@@ -1,0 +1,40 @@
+#ifndef SSHCONNECTER_H
+#define SSHCONNECTER_H
+
+#include <QObject>
+#include <libssh/libssh.h>
+#include <QStringList>
+#include <QMutex>
+
+class SSHConnecter : public QObject
+{
+    Q_OBJECT
+
+public:
+    static SSHConnecter& instance() {
+        static SSHConnecter instance;
+        return instance;
+    }
+
+    bool connectToHost(const QString& hostname, const QString& username, const QString& password);
+    QStringList listTestFiles();
+    bool runTest(const QString& testFileName);
+    void disconnect();
+
+private:
+    SSHConnecter();
+    ~SSHConnecter();
+    SSHConnecter(const SSHConnecter&) = delete;
+    SSHConnecter& operator=(const SSHConnecter&) = delete;
+
+    ssh_session session;
+    QString username;
+    QString password;
+    QMutex mutex;
+    bool isConnected;
+
+    bool authenticate();
+    QString executeCommand(const QString& command);
+};
+
+#endif // SSHCONNECTER_H
