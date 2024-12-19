@@ -1,0 +1,207 @@
+Если вы предпочитаете использовать исключительно Qt, это тоже отличный подход, так как Qt предоставляет мощный набор инструментов для работы с коллекциями, строками и объектами. Ниже приведён обновлённый вариант архитектуры, заменяющий std::unordered_map на QMap, QString и другие элементы Qt.
+
+Обновлённая реализация с использованием Qt
+
+1. IOIDGenerator.h
+
+#ifndef IOIDGENERATOR_H
+#define IOIDGENERATOR_H
+
+#include <QString>
+
+class IOIDGenerator {
+public:
+    virtual ~IOIDGenerator() = default;
+
+    // Метод для получения полного OID
+    virtual QString GetFullOID(const QString& branchName) const = 0;
+
+    // Метод для получения базового OID устройства
+    virtual QString GetBaseOID() const = 0;
+};
+
+#endif // IOIDGENERATOR_H
+
+2. SupertelOIDGenerator.h
+
+#ifndef SUPERTEL_OIDGENERATOR_H
+#define SUPERTEL_OIDGENERATOR_H
+
+#include "IOIDGenerator.h"
+
+class SupertelOIDGenerator : public IOIDGenerator {
+public:
+    SupertelOIDGenerator();
+    ~SupertelOIDGenerator() override;
+
+    QString GetFullOID(const QString& branchName) const override;
+    QString GetBaseOID() const override;
+};
+
+#endif // SUPERTEL_OIDGENERATOR_H
+
+3. SupertelOIDGenerator.cpp
+
+#include "SupertelOIDGenerator.h"
+
+SupertelOIDGenerator::SupertelOIDGenerator() = default;
+
+SupertelOIDGenerator::~SupertelOIDGenerator() = default;
+
+QString SupertelOIDGenerator::GetFullOID(const QString& branchName) const {
+    return GetBaseOID() + "." + branchName;
+}
+
+QString SupertelOIDGenerator::GetBaseOID() const {
+    return "1.3.6.1.4.1.9999"; // Базовый OID для Supertel
+}
+
+4. OIDManager.h
+
+#ifndef OIDMANAGER_H
+#define OIDMANAGER_H
+
+#include <QObject>
+#include <QMap>
+#include <QString>
+#include <memory>
+#include "IOIDGenerator.h"
+
+class OIDManager : public QObject {
+    Q_OBJECT
+
+public:
+    explicit OIDManager(QObject* parent = nullptr);
+    QString GetFullOID(const QString& deviceName, const QString& branchName) const;
+
+    // Регистрация нового устройства
+    void RegisterGenerator(const QString& deviceName, std::unique_ptr<IOIDGenerator> generator);
+
+private:
+    QMap<QString, std::unique_ptr<IOIDGenerator>> generators;
+};
+
+#endif // OIDMANAGER_H
+
+5. OIDManager.cpp
+
+#include "OIDManager.h"
+#include "SupertelOIDGenerator.h"
+
+OIDManager::OIDManager(QObject* parent)
+    : QObject(parent) {
+    // Регистрация устройств
+    RegisterGenerator("Supertel", std::make_unique<SupertelOIDGenerator>());
+}
+
+QString OIDManager::GetFullOID(const QString& deviceName, const QString& branchName) const {
+    if (generators.contains(deviceName)) {
+        return generators.value(deviceName)->GetFullOID(branchName);
+    }
+    return "Unknown Device";
+}
+
+void OIDManager::RegisterGenerator(const QString& deviceName, std::unique_ptr<IOIDGenerator> generator) {
+    generators.insert(deviceName, std::move(generator));
+}
+
+6. SupertelOID.h
+
+#ifndef SUPERTEL_OID_H
+#define SUPERTEL_OID_H
+
+#include <QString>
+
+namespace OIDGenerator {
+    namespace Supertel {
+        class Info {
+        public:
+            static QString GetFullInfo();
+        };
+
+        class Status {
+        public:
+            static QString GetFullStatus();
+        };
+    }
+}
+
+#endif // SUPERTEL_OID_H
+
+7. SupertelOID.cpp
+
+#include "SupertelOID.h"
+#include "SupertelOIDGenerator.h"
+
+QString OIDGenerator::Supertel::Info::GetFullInfo() {
+    SupertelOIDGenerator generator;
+    return generator.GetFullOID("1"); // Например, ветка "1" для информации
+}
+
+QString OIDGenerator::Supertel::Status::GetFullStatus() {
+    SupertelOIDGenerator generator;
+    return generator.GetFullOID("2"); // Например, ветка "2" для статуса
+}
+
+8. main.cpp
+
+#include <QCoreApplication>
+#include <QDebug>
+#include "OIDManager.h"
+#include "SupertelOID.h"
+
+int main(int argc, char *argv[]) {
+    QCoreApplication a(argc, argv);
+
+    // Пример работы с неймспейсами
+    qDebug() << OIDGenerator::Supertel::Info::GetFullInfo();
+    qDebug() << OIDGenerator::Supertel::Status::GetFullStatus();
+
+    // Пример работы с менеджером
+    OIDManager manager;
+    qDebug() << manager.GetFullOID("Supertel", "1");
+
+    return a.exec();
+}
+
+Объяснения изменений
+	1.	Использование QMap вместо std::unordered_map:
+В OIDManager теперь используется QMap, который удобен для хранения данных в Qt-приложениях и поддерживает ключи в виде QString.
+	2.	Работа с QObject:
+OIDManager унаследован от QObject, что позволяет интегрировать его в системы сигналов и слотов, если потребуется.
+	3.	Упрощённая регистрация устройств:
+RegisterGenerator использует std::unique_ptr для регистрации новых генераторов, что упрощает управление их временем жизни.
+	4.	Безопасное использование Qt:
+Все строки (QString), коллекции (QMap) и прочее основаны на Qt, что упрощает взаимодействие в Qt-приложениях.
+	5.	Кроссплатформенность:
+Использование Qt делает проект более переносимым, так как Qt предоставляет единообразные API для всех поддерживаемых платформ.
+
+Как собрать проект с помощью CMake
+
+Добавьте следующий CMakeLists.txt:
+
+cmake_minimum_required(VERSION 3.14)
+
+project(OIDGenerator)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_AUTOMOC ON)
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
+add_executable(OIDGenerator
+    main.cpp
+    IOIDGenerator.h
+    SupertelOIDGenerator.h
+    SupertelOIDGenerator.cpp
+    OIDManager.h
+    OIDManager.cpp
+    SupertelOID.h
+    SupertelOID.cpp
+)
+
+target_link_libraries(OIDGenerator Qt6::Core)
+
+Результат
+
+Теперь ваш проект полностью основан на инструментах Qt и готов к интеграции в Qt-приложения. Если нужно добавить больше деталей или примеров, дайте знать!
