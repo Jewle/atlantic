@@ -1,2 +1,5 @@
 https://limewire.com/d/3fe8b260-82a1-4450-95bd-2cf53701a05c#7yP_dw1rU3yMUb7i-UDcd0b0zeVpqElobzN0WiFfSqs
-https://www.intel.com/content/www/us/en/products/sku/80806/intel-core-i74790-processor-8m-cache-up-to-4-00-ghz/downloads.html
+https://www.intel.com/content/www/us/en/products/sku/80806/intel-core-i74790-processor-8m-cache-up-to-4-00-ghz/downloads
+
+
+https://downloadmirror.intel.com/30196/a08/win64_15.40.5171.exe
