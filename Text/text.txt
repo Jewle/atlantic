@@ -1,19 +1,18 @@
-Вопросы по селекции до понедельника 03.02:
-
-1) Переиспользование КУФов. Достаточный ли функционал? Будут ли требоваться доработки? Нужно ли переиспользование, если нужны доработки?
-
-3) Брокер сообщений. 
-
-Мы его берем готовым или дорабатываем / разрабатываем? 
-
-Нужен ли он в принципе? 
-
-Dbus? TR-069 - взаимодействие по протоколу xmpp?
-
-3) Пересмотреть структуру модуля мониторинга при переиспользовании КУФа.
-
-4) Во всей схеме рассмотреть xml/json взаимодействия и (возможно) прийти к чему-то одному.
-
-5) Telnet. Взаимодействие с агентами, которыми управляем напрямую. Точно ли Telnet? Подумать, какой именно протокол используется.
-
-6) Взаимодействие между GUI и модулем управления - была высказана мысль, что взаимодействия по json там нет, нужен брокер сообщений (шина) между ними. Разобраться.
+SELECT 
+    e.id, 
+    e.element_name, 
+    e.ip, 
+    et.template_name, 
+    json_agg(
+        json_build_object(
+            'id', pt.id, 
+            'oid', pt.oid, 
+            'low_bound', th.low_bound, 
+            'high_bound', th.high_bound
+        )
+    ) AS params
+FROM elements e
+JOIN element_template et ON e.element_template_id = et.id
+LEFT JOIN params_template pt ON et.id = pt.element_template_id
+LEFT JOIN thresholds th ON pt.threshold_id = th.id
+GROUP BY e.id, e.element_name, e.ip, et.template_name;
