@@ -1,0 +1,30 @@
+#include <QCoreApplication>
+#include <QMutex>
+#include "DBClient.h"
+#include "Monitor.h"
+
+int main(int argc, char *argv[]) {
+    QCoreApplication a(argc, argv);
+    QMutex mtx;
+
+    DBClient dbClient("192.168.56.105", "selection_monitoring", "postgres", "", 5432);
+    
+    if (!dbClient.connect()) {
+        return 1;
+    }
+
+    QList<BaseMonitor::MonitorInputData> inputData = dbClient.fetchMonitoringData();
+    if (inputData.isEmpty()) {
+        qDebug() << "No monitoring data found.";
+        return 1;
+    }
+
+    Monitor* monitor = new Monitor(&a, inputData);
+    monitor->startMonitoring();
+
+    QObject::connect(monitor, &Monitor::responseReceived, &a, [&dbClient](const BaseMonitor::monitoringItemDataResult& midr) {
+        dbClient.insertMonitoringResults(midr);
+    });
+
+    return a.exec();
+}
