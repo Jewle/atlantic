@@ -1,0 +1,36 @@
+#ifndef SQLBUILDER_H
+#define SQLBUILDER_H
+
+#include <QString>
+
+class SQLBuilder {
+public:
+    static QString getElementsQuery() {
+        return R"(
+            SELECT e.id, e.element_name, e.ip_address, et.template_name, 
+                   json_agg(json_build_object('id', pt.id, 'oid', pt.oid, 'low_bound', th.low_bound, 'high_bound', th.high_bound)) AS params 
+            FROM elements e 
+            JOIN elements_template et ON e.element_template_id = et.id 
+            LEFT JOIN params_template pt ON et.id = pt.element_template_id 
+            LEFT JOIN thresholds th ON pt.threshold_id = th.id 
+            GROUP BY e.id, e.element_name, e.ip_address, et.template_name
+        )";
+    }
+
+    static QString insertElementStateQuery() {
+        return R"(
+            INSERT INTO elements_params_state (element_id, value, param_template_id) 
+            VALUES (:element_id, :value, :param_template_id)
+        )";
+    }
+
+    static QString insertIntegralStateQuery() {
+        return R"(
+            INSERT INTO elements_integral_state (element_id, integral_state) 
+            VALUES (:element_id, :integral_state) 
+            ON CONFLICT (element_id) DO UPDATE SET integral_state = EXCLUDED.integral_state
+        )";
+    }
+};
+
+#endif // SQLBUILDER_H
