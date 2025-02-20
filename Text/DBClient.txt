@@ -1,0 +1,107 @@
+#ifndef DBCLIENT_H
+#define DBCLIENT_H
+
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QDebug>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include "SQLBuilder.h"
+#include "BaseMonitor.h"
+
+class DBClient {
+public:
+    explicit DBClient(const QString& host, const QString& dbName, const QString& user, const QString& password, int port) {
+        db = QSqlDatabase::addDatabase("QPSQL");
+        db.setHostName(host);
+        db.setDatabaseName(dbName);
+        db.setUserName(user);
+        db.setPassword(password);
+        db.setPort(port);
+    }
+
+    bool connect() {
+        if (!db.open()) {
+            qDebug() << "Database connection error:" << db.lastError().text();
+            return false;
+        }
+        return true;
+    }
+
+    QList<BaseMonitor::MonitorInputData> fetchMonitoringData() {
+        QList<BaseMonitor::MonitorInputData> inputData;
+        QSqlQuery query;
+
+        if (!query.exec(SQLBuilder::getElementsQuery())) {
+            qDebug() << "Query execution error:" << query.lastError().text();
+            return inputData;
+        }
+
+        while (query.next()) {
+            BaseMonitor::MonitorInputData inputDataStruct;
+            inputDataStruct.element_id = query.value("id").toUInt();
+            inputDataStruct.element_ip = query.value("ip_address").toString();
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(query.value("params").toString().toUtf8());
+            inputDataStruct.params = jsonDoc.array();
+            inputData.append(inputDataStruct);
+        }
+
+        return inputData;
+    }
+
+    bool insertMonitoringResults(const BaseMonitor::monitoringItemDataResult& midr) {
+        if (!db.transaction()) {
+            qDebug() << "Failed to start transaction:" << db.lastError().text();
+            return false;
+        }
+
+        QSqlQuery query;
+        query.prepare(SQLBuilder::insertElementStateQuery());
+
+        for (const BaseMonitor::monitoringParamState& param_state : midr.params) {
+            query.bindValue(":element_id", midr.element_id);
+            query.bindValue(":value", param_state.param_value);
+            query.bindValue(":param_template_id", param_state.param_template_id);
+
+            if (!query.exec()) {
+                qDebug() << "Error inserting into elements_params_state:" << query.lastError().text();
+                db.rollback();
+                return false;
+            }
+        }
+
+        int errors = 0;
+        for (const auto& param_state : midr.params) {
+            if (!param_state.param_state) {
+                errors++;
+            }
+        }
+
+        int element_integral_state = (errors == 0) ? 1 : (errors < midr.params.size() ? 2 : 3);
+
+        query.prepare(SQLBuilder::insertIntegralStateQuery());
+        query.bindValue(":element_id", midr.element_id);
+        query.bindValue(":integral_state", element_integral_state);
+
+        if (!query.exec()) {
+            qDebug() << "Error inserting into elements_integral_state:" << query.lastError().text();
+            db.rollback();
+            return false;
+        }
+
+        if (!db.commit()) {
+            qDebug() << "Transaction commit error:" << db.lastError().text();
+            db.rollback();
+            return false;
+        }
+
+        qDebug() << "Transaction committed successfully.";
+        return true;
+    }
+
+private:
+    QSqlDatabase db;
+};
+
+#endif // DBCLIENT_H
