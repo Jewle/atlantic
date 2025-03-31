@@ -1,0 +1,146 @@
+#include <QCoreApplication>
+#include "src/Monitor/Monitor.h"
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QVariant>
+#include <QSqlQuery>
+#include <memory>
+#include <algorithm>
+#include <QObject>
+#include <QThread>
+#include <QMutex>
+#include <QVector>
+#include <QtSnmp/QtSnmpPooler.h>
+#include <QSqlDriver>
+#include "src/DBClient/DBClient.h"
+#include "src/checkPlugins/CheckPluginsFactory.h"
+
+
+struct ErrorGroup
+{
+    int critical_errors = 0;
+    int critical_warns = 0;
+    int lite_errors = 0;
+    int lite_warns = 0;
+
+};
+
+struct ParamState{
+  int param_id = 0;
+  int group_id = 0;
+  int state = 1;
+  bool is_critical = false;
+};
+
+int main(int argc, char *argv[])
+{
+    QCoreApplication a(argc, argv);
+    DBClient* dbClient = new DBClient("localhost", "selection_monitoring_4", "postgres", "", 5434, &a);
+
+    if (!dbClient->connectDB()) {
+          return 1;
+     }
+
+
+
+    QList<BaseMonitor::MonitorInputData> inputData = dbClient->fetchMonitoringData();
+    if (inputData.isEmpty()) {
+        qDebug() << "No monitoring data found.";
+        return 1;
+    }
+
+    Monitor* monitor = new Monitor(&a, inputData, 161);
+    monitor->startMonitoring(5);
+    QObject::connect(dbClient,&DBClient::intervalChanged, &a, [monitor](const int& interval){
+        monitor->changeInterval(interval);
+    });
+
+
+
+
+
+    QObject::connect(monitor,
+                     &Monitor::responseReceived,
+                     &a,
+                     [&dbClient](const BaseMonitor::monitoringItemDataResult& midr) {
+
+        BaseMonitor::monitoringItemDataResult midrCopy = midr;
+
+        //Применение плагина проверки значения параметра
+        for(BaseMonitor::monitoringParamState& param: midrCopy.params){
+            if(!param.param_state) continue;
+            ICheckPlugin* checkPlugin = CheckPluginsFactory::getPlugin(param.check_plugin_name);
+            if(!checkPlugin) continue;
+            CheckPlguinsData::CheckPluginReturnData returnedData = checkPlugin->doCompare(param);
+            param.param_state = returnedData.state;
+            param.message = returnedData.message;
+            delete checkPlugin;
+        }
+
+
+        dbClient->insertMonitoringResults(midrCopy);
+    });
+
+    ParamState p1;
+    ParamState p2;
+    ParamState p3;
+    ParamState p4;
+    ParamState p5;
+
+    p1.param_id = 1;
+    p1.is_critical = true;
+    p1.group_id = 1;
+    p1.state = 1;
+
+    p2.param_id = 2;
+    p2.is_critical = true;
+    p2.group_id = 1;
+    p2.state = 2;
+
+    p3.param_id = 3;
+    p3.is_critical = false;
+    p3.group_id = 1;
+    p3.state = 3;
+
+    p4.param_id = 4;
+    p4.is_critical = true;
+    p4.group_id = 2;
+    p4.state = 3;
+
+    p5.param_id = 5;
+    p5.is_critical = false;
+    p5.group_id = 2;
+    p5.state = 1;
+
+
+    QList<ParamState> params_states;
+
+    params_states.append(p1);
+    params_states.append(p2);
+    params_states.append(p3);
+    params_states.append(p4);
+    params_states.append(p5);
+
+    QMap<int, ErrorGroup*> error_groups;
+    for(const ParamState& ps: params_states){
+        ErrorGroup* current_group = new ErrorGroup();
+
+    }
+    for(const ParamState& ps: params_states){
+        ErrorGroup* current_group = error_groups.value(ps.group_id);
+        if(current_group==nullptr) current_group = new ErrorGroup();
+        if(ps.is_critical){
+            if(ps.state==3) current_group->critical_errors += 1;
+            if(ps.state==2) current_group->critical_warns += 1;
+
+        }
+        else{
+            if(ps.state==3) current_group->lite_errors += 1;
+            if(ps.state==2) current_group->lite_warns += 1;
+        }
+    }
+
+
+
+    return a.exec();
+}
